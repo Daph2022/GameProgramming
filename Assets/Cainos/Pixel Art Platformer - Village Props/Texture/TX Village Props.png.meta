@@ -485,10 +485,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 30
+  spritePixelsToUnits: 32
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -4806,8 +4806,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 69c5ec2a7bcf96d478545818a702860c
-      internalID: 1988941200
+      spriteID: 4ded214b4af0d4948a4ddcda7cc57de9
+      internalID: -744768401
       vertices: []
       indices: 
       edges: []
@@ -4828,8 +4828,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 544b5f2b88284d6448f9c1760f77bd4e
-      internalID: -190965683
+      spriteID: 62498ba4c85fba546a7cf72d4d98c9e2
+      internalID: -811584904
       vertices: []
       indices: 
       edges: []
@@ -4850,8 +4850,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c97771184b39ca34988d89853bcfee4e
-      internalID: -271601650
+      spriteID: 3b96488f13f04f3439f1edd46beb74b6
+      internalID: 1108778991
       vertices: []
       indices: 
       edges: []
@@ -4872,8 +4872,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1813c83dc760a0247a2aa4332b532548
-      internalID: 1322067808
+      spriteID: 7150a1ff93af4934693101b9951da31c
+      internalID: -1760389995
       vertices: []
       indices: 
       edges: []
@@ -4894,8 +4894,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 38afc25a575c0434aa39fe1ef203e672
-      internalID: 22678191
+      spriteID: 635546a26c87dd04ea2087ea90dece63
+      internalID: -58145993
       vertices: []
       indices: 
       edges: []
@@ -4916,8 +4916,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9ea89267d318638409ab6f9c1588da8c
-      internalID: 818232233
+      spriteID: 003040c028d23904f87724c262fd32a0
+      internalID: -48401481
       vertices: []
       indices: 
       edges: []
@@ -4938,8 +4938,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6433755f259bea64294f4a0382556179
-      internalID: -1446778738
+      spriteID: 99c7f84bb94f2c84aaec2702002952af
+      internalID: -1774738692
       vertices: []
       indices: 
       edges: []
@@ -4960,8 +4960,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c857a2705d0d2f840bdbcfd35feee5ce
-      internalID: -1653357260
+      spriteID: 381587f855d0fb8458d701f2b2efc7da
+      internalID: 1468156072
       vertices: []
       indices: 
       edges: []
@@ -5172,14 +5172,14 @@ TextureImporter:
       TX Village Props - Wooden Bridge Part 04: 1792859017
       TX Village Props - Wooden Bridge Part 05: -446960186
       TX Village Props - Wooden Bridge Rope: 1919939598
-      TX Village Props_0: 1988941200
-      TX Village Props_1: -190965683
-      TX Village Props_2: -271601650
-      TX Village Props_3: 1322067808
-      TX Village Props_4: 22678191
-      TX Village Props_5: 818232233
-      TX Village Props_6: -1446778738
-      TX Village Props_7: -1653357260
+      TX Village Props_0: -744768401
+      TX Village Props_1: -811584904
+      TX Village Props_2: 1108778991
+      TX Village Props_3: -1760389995
+      TX Village Props_4: -58145993
+      TX Village Props_5: -48401481
+      TX Village Props_6: -1774738692
+      TX Village Props_7: 1468156072
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
