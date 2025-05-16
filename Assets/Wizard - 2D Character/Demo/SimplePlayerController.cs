@@ -5,24 +5,24 @@ namespace ClearSky
     public class SimplePlayerController : MonoBehaviour
     {
         public float movePower = 10f;
-        public float jumpPower = 15f; //Set Gravity Scale in Rigidbody2D Component to 5
+        public float jumpPower = 15f; // Gravity Scale dans Rigidbody2D à 5
 
         private Rigidbody2D rb;
         private Animator anim;
-        Vector3 movement;
         private int direction = 1;
-        bool isJumping = false;
+        private bool isGrounded = false;
         private bool alive = true;
+        public float attackRange = 2f;
+        public LayerMask enemyLayer;
+        public GameObject fireballPrefab;
 
-
-        // Start is called before the first frame update
         void Start()
         {
             rb = GetComponent<Rigidbody2D>();
             anim = GetComponent<Animator>();
         }
 
-        private void Update()
+        void Update()
         {
             Restart();
             if (alive)
@@ -32,70 +32,74 @@ namespace ClearSky
                 Attack();
                 Jump();
                 Run();
-
             }
         }
-        private void OnTriggerEnter2D(Collider2D other)
+
+        private void OnCollisionEnter2D(Collision2D collision)
         {
-            anim.SetBool("isJump", false);
+            if (collision.gameObject.CompareTag("Ground"))
+            {
+                isGrounded = true;
+                anim.SetBool("isJump", false);
+            }
         }
 
+        private void OnCollisionExit2D(Collision2D collision)
+        {
+            if (collision.gameObject.CompareTag("Ground"))
+            {
+                isGrounded = false;
+                anim.SetBool("isJump", true);
+            }
+        }
 
         void Run()
         {
             Vector3 moveVelocity = Vector3.zero;
             anim.SetBool("isRun", false);
 
-
             if (Input.GetAxisRaw("Horizontal") < 0)
             {
                 direction = -1;
                 moveVelocity = Vector3.left;
-
                 transform.localScale = new Vector3(direction, 1, 1);
                 if (!anim.GetBool("isJump"))
                     anim.SetBool("isRun", true);
-
             }
-            if (Input.GetAxisRaw("Horizontal") > 0)
+            else if (Input.GetAxisRaw("Horizontal") > 0)
             {
                 direction = 1;
                 moveVelocity = Vector3.right;
-
                 transform.localScale = new Vector3(direction, 1, 1);
                 if (!anim.GetBool("isJump"))
                     anim.SetBool("isRun", true);
-
             }
+
             transform.position += moveVelocity * movePower * Time.deltaTime;
         }
+
         void Jump()
         {
-            if ((Input.GetButtonDown("Jump") || Input.GetAxisRaw("Vertical") > 0)
-            && !anim.GetBool("isJump"))
+            if ((Input.GetButtonDown("Jump") || Input.GetAxisRaw("Vertical") > 0) && isGrounded)
             {
-                isJumping = true;
                 anim.SetBool("isJump", true);
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f); // Reset vitesse verticale
+                rb.AddForce(new Vector2(0f, jumpPower), ForceMode2D.Impulse);
+                isGrounded = false;
             }
-            if (!isJumping)
-            {
-                return;
-            }
-
-            rb.linearVelocity = Vector2.zero;
-
-            Vector2 jumpVelocity = new Vector2(0, jumpPower);
-            rb.AddForce(jumpVelocity, ForceMode2D.Impulse);
-
-            isJumping = false;
         }
+
         void Attack()
         {
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 anim.SetTrigger("attack");
+                Vector3 fireballPosition = transform.position + new Vector3(0.5f * direction, 2.5f, 0);
+                GameObject fireball = Instantiate(fireballPrefab, fireballPosition, Quaternion.identity);
+                fireball.transform.localScale = new Vector3(direction * 0.19f, 0.19f, 0.19f);
             }
         }
+
         void Hurt()
         {
             if (Input.GetKeyDown(KeyCode.Alpha2))
@@ -107,6 +111,7 @@ namespace ClearSky
                     rb.AddForce(new Vector2(5f, 1f), ForceMode2D.Impulse);
             }
         }
+
         void Die()
         {
             if (Input.GetKeyDown(KeyCode.Alpha3))
@@ -115,6 +120,7 @@ namespace ClearSky
                 alive = false;
             }
         }
+
         void Restart()
         {
             if (Input.GetKeyDown(KeyCode.Alpha0))
