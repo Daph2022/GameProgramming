@@ -7,7 +7,7 @@ public class Fireball : MonoBehaviour
     public float maxDistance = 10f; // Distance maximale avant que la boule disparaisse
     public GameObject fireballEffect; // Prefab de l'effet de particules de la boule de feu
     public GameObject impactEffect;   // Prefab de l'effet d'impact (explosion ou autre)
-    public float activationDelay = 1f; 
+    public float activationDelay = 2f; 
     private Rigidbody2D rb;
     private Vector3 startPosition;
     private GameObject fireballEffectInstance; // Instance de l'effet de la boule de feu

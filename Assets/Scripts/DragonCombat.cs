@@ -4,7 +4,7 @@ using System.Collections;
 public class DragonCombat : MonoBehaviour
 {
     [Header("PV")]
-    public int maxHealth = 10;
+    public int maxHealth = 5;
     private int currentHealth;
 
     [Header("Références")]
@@ -36,11 +36,12 @@ public class DragonCombat : MonoBehaviour
     private bool canAttack = true;
     private bool canSpecialAttack = true;
     private bool isAttacking = false;
+    private bool isStuned = false;
 
     void Start()
     {
         currentHealth = maxHealth;
-        // Si le joueur n'est pas assigné, le trouver par tag
+
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -50,7 +51,6 @@ public class DragonCombat : MonoBehaviour
             }
         }
 
-        // S'assurer que les composants nécessaires sont assignés
         if (animator == null)
             animator = GetComponent<Animator>();
 
@@ -60,43 +60,62 @@ public class DragonCombat : MonoBehaviour
 
     void Update()
     {
-        if (!inCombat) return;
+        // Bloquer toutes actions si étourdi ou en train d'attaquer ou si hors combat ou joueur manquant
+        if (!inCombat || player == null || isAttacking || isStuned)
+            return;
 
-        if (player != null && !isAttacking)
+        // Mettre à jour l'orientation du dragon en fonction de la position du joueur
+        UpdateFacing();
+
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
+        if (distanceToPlayer <= attackRange)
         {
-            // Calculer la distance au joueur
-            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-
-            // Décider de l'action en fonction de la distance
-            if (distanceToPlayer <= attackRange)
+            if (canAttack)
             {
-                // À portée d'attaque normale
-                if (canAttack)
-                {
-                    StartCoroutine(PerformAttack());
-                }
-            }
-            else if (distanceToPlayer <= specialAttackRange)
-            {
-                // À portée d'attaque spéciale
-                if (canSpecialAttack)
-                {
-                    StartCoroutine(PerformSpecialAttack());
-                }
-                else if (canAttack)
-                {
-                    StartCoroutine(PerformAttack());
-                }
-                else
-                {
-                    // Se déplacer vers le joueur
-                    MoveTowardsPlayer();
-                }
+                StartCoroutine(PerformAttack());
             }
             else
             {
-                // Trop loin, se déplacer vers le joueur
+                StopMovement();
+            }
+        }
+        else if (distanceToPlayer <= specialAttackRange)
+        {
+            if (canSpecialAttack)
+            {
+                StartCoroutine(PerformSpecialAttack());
+            }
+            else if (canAttack)
+            {
+                StartCoroutine(PerformAttack());
+            }
+            else
+            {
                 MoveTowardsPlayer();
+            }
+        }
+        else
+        {
+            MoveTowardsPlayer();
+        }
+    }
+
+    // Nouvelle méthode pour mettre à jour l'orientation du dragon
+    private void UpdateFacing()
+    {
+        if (player != null)
+        {
+            // Détermine si le dragon doit faire face à droite ou à gauche
+            bool shouldFaceRight = player.position.x > transform.position.x;
+
+            // Mettre à jour la variable isFacingRight seulement si nécessaire
+            if (shouldFaceRight != isFacingRight)
+            {
+                isFacingRight = shouldFaceRight;
+                
+                // Si vous avez besoin de retourner le sprite
+                // transform.localScale = new Vector3(isFacingRight ? 1 : -1, 1, 1);
             }
         }
     }
@@ -110,7 +129,7 @@ public class DragonCombat : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (currentHealth <= 0) return; // déjà mort, on ignore
+        if (currentHealth <= 0) return;
 
         currentHealth -= damage;
         Debug.Log($"Dragon prend {damage} dégâts, PV restants : {currentHealth}");
@@ -121,137 +140,106 @@ public class DragonCombat : MonoBehaviour
         }
         else
         {
-            animator.SetTrigger("StunedTrigger");
+            // Déclenche l'état étourdi
+            StartCoroutine(Stun());
         }
+    }
+
+    private IEnumerator Stun()
+    {
+        isStuned = true;
+        animator.SetTrigger("StunedTrigger");
+
+        // Arrêter tout mouvement
+        StopMovement();
+
+        // Durée d'étourdissement = durée de l'animation + un peu de temps
+        yield return new WaitForSeconds(2.0f);
+
+        isStuned = false;
     }
 
     private void MoveTowardsPlayer()
     {
-        if (player == null) return;
-
         Vector2 direction = (player.position - transform.position).normalized;
 
-        // Déplacement du dragon
         rb.linearVelocity = new Vector2(direction.x * moveSpeed, rb.linearVelocity.y);
 
-        // Animation
         animator.SetBool("IsMoving", Mathf.Abs(rb.linearVelocity.x) > 0.1f);
-
-        // Flip du sprite
-        if (direction.x > 0 && !isFacingRight)
-        {
-            Flip();
-        }
-        else if (direction.x < 0 && isFacingRight)
-        {
-            Flip();
-        }
     }
 
-
-    private void Flip()
+    private void StopMovement()
     {
-        // Inverser la direction du sprite
-        isFacingRight = !isFacingRight;
-        Vector3 theScale = transform.localScale;
-        theScale.x *= -1;
-        transform.localScale = theScale;
+        rb.linearVelocity = Vector2.zero;
+        animator.SetBool("IsMoving", false);
     }
 
     private IEnumerator PerformAttack()
     {
-        // Préparer l'attaque
         isAttacking = true;
         canAttack = false;
 
-        // Arrêter le mouvement
-        rb.linearVelocity = Vector2.zero;
+        StopMovement();
 
-        // Déclencher l'animation d'attaque
         animator.SetTrigger("AttackTrigger");
 
-        // Jouer le son d'attaque
         if (audioSource != null && attackSound != null)
-        {
             audioSource.PlayOneShot(attackSound);
-        }
 
-        // Attendre que l'animation atteigne le point d'impact
-        yield return new WaitForSeconds(0.5f); // Ajuster selon votre animation
+        yield return new WaitForSeconds(0.5f);
 
-        // Vérifier si le joueur est à portée pour infliger des dégâts
         CheckHitPlayer(attackRange, attackDamage);
 
-        // Attendre que l'animation d'attaque se termine
-        yield return new WaitForSeconds(0.5f); // Ajuster selon votre animation
+        yield return new WaitForSeconds(0.5f);
 
-        // Réinitialiser les états
         isAttacking = false;
 
-        // Appliquer le cooldown
         yield return new WaitForSeconds(attackCooldown);
         canAttack = true;
     }
 
     private IEnumerator PerformSpecialAttack()
     {
-        // Préparer l'attaque spéciale
         isAttacking = true;
         canSpecialAttack = false;
 
-        // Arrêter le mouvement
-        rb.linearVelocity = Vector2.zero;
+        StopMovement();
 
-        // Déclencher l'animation d'attaque spéciale
         animator.SetTrigger("SpecialATrigger");
 
-        // Jouer le son d'attaque spéciale
         if (audioSource != null && specialAttackSound != null)
-        {
             audioSource.PlayOneShot(specialAttackSound);
-        }
 
-        // Attendre que l'animation atteigne le point d'impact
-        yield return new WaitForSeconds(0.8f); // Ajuster selon votre animation
+        yield return new WaitForSeconds(0.8f);
 
-        // Vérifier si le joueur est à portée pour infliger des dégâts
         CheckHitPlayer(specialAttackRange, specialAttackDamage);
 
-        // Attendre que l'animation d'attaque spéciale se termine
-        yield return new WaitForSeconds(0.7f); // Ajuster selon votre animation
+        yield return new WaitForSeconds(0.7f);
 
-        // Réinitialiser les états
         isAttacking = false;
 
-        // Appliquer le cooldown
         yield return new WaitForSeconds(specialAttackCooldown);
         canSpecialAttack = true;
     }
 
     private void CheckHitPlayer(float range, int damage)
     {
-        // Vérifier si le joueur est à portée
-        if (player != null)
+        if (player == null) return;
+
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
+        if (distanceToPlayer <= range)
         {
-            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-
-            if (distanceToPlayer <= range)
+            // Utiliser GetComponent directement sur le joueur au lieu du Raycast
+            PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
             {
-                // Déterminer la direction de l'attaque
-                Vector2 direction = isFacingRight ? Vector2.right : Vector2.left;
-
-                // Effectuer un Raycast pour vérifier s'il y a des obstacles
-                RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, range);
-
-                if (hit.collider != null && hit.collider.CompareTag("Player"))
-                {
-                    // Infliger des dégâts au joueur
-                    PlayerHealth playerHealth = hit.collider.GetComponent<PlayerHealth>();
-                    if (playerHealth != null)
-                    {
-                        playerHealth.TakeDamage(damage);
-                    }
-                }
+                playerHealth.TakeDamage(damage);
+                Debug.Log($"Dragon a touché le joueur et infligé {damage} points de dégâts !");
+            }
+            else
+            {
+                Debug.LogWarning("Le joueur n'a pas de composant PlayerHealth !");
             }
         }
     }
@@ -260,14 +248,23 @@ public class DragonCombat : MonoBehaviour
     {
         Debug.Log("Dragon est mort !");
         animator.SetTrigger("DeathTrigger");
-        // Bloquer les actions du dragon, désactiver le script par exemple
+
         this.enabled = false;
         rb.linearVelocity = Vector2.zero;
-        // Tu peux aussi désactiver le collider pour qu'il ne prenne plus de dégâts
         GetComponent<Collider2D>().enabled = false;
-        // Ajouter une destruction différée si tu veux
+
         Destroy(gameObject, 3f);
     }
 
-
+    // Pour le débogage visuel
+    void OnDrawGizmosSelected()
+    {
+        // Visualiser la portée d'attaque
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+        
+        // Visualiser la portée d'attaque spéciale
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, specialAttackRange);
+    }
 }
